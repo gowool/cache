@@ -3,19 +3,14 @@ package cache
 import (
 	"context"
 	"errors"
-	"io"
 	"time"
 )
 
 var _ Backend = ChainBackend{}
 
-var (
-	ErrExpired  = errors.New("item expired")
-	ErrNotFound = errors.New("item not found")
-)
+var ErrNotFound = errors.New("item not found")
 
 type Backend interface {
-	io.Closer
 	Get(ctx context.Context, key string) ([]byte, error)
 	Set(ctx context.Context, key string, value []byte, ttl time.Duration) error
 	Del(ctx context.Context, key string) error
@@ -57,13 +52,6 @@ func (b ChainBackend) Del(ctx context.Context, key string) (err error) {
 func (b ChainBackend) DelAll(ctx context.Context) (err error) {
 	for _, backend := range b.backends {
 		err = errors.Join(err, backend.DelAll(ctx))
-	}
-	return
-}
-
-func (b ChainBackend) Close() (err error) {
-	for _, backend := range b.backends {
-		err = errors.Join(err, backend.Close())
 	}
 	return
 }

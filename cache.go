@@ -5,13 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"slices"
 	"time"
 )
 
 type Cache interface {
-	io.Closer
 	Set(ctx context.Context, key string, value interface{}, tags ...string) error
 	Get(ctx context.Context, key string, value interface{}) error
 	DelByKey(ctx context.Context, key string) error
@@ -98,10 +96,6 @@ func (c cache) DelByTag(ctx context.Context, tag string) error {
 
 func (c cache) DelAll(ctx context.Context) error {
 	return c.backend.DelAll(ctx)
-}
-
-func (c cache) Close() error {
-	return c.backend.Close()
 }
 
 func (c cache) set(ctx context.Context, key string, value interface{}) error {
