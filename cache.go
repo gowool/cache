@@ -3,10 +3,11 @@ package cache
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"slices"
 	"time"
+
+	"github.com/goccy/go-json"
 )
 
 type Cache interface {
