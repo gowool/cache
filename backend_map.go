@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var _ Backend = (*MemoryBackend)(nil)
+var _ Backend = (*MapBackend)(nil)
 
 type Item struct {
 	Value      []byte
@@ -21,14 +21,14 @@ func (i Item) Expired() bool {
 	return time.Now().UnixNano() > i.Expiration
 }
 
-type MemoryBackend struct {
+type MapBackend struct {
 	mu      sync.RWMutex
 	items   map[string]Item
 	janitor *janitor
 }
 
-func NewMemoryBackendFrom(cleanupInterval time.Duration, items map[string]Item) *MemoryBackend {
-	b := &MemoryBackend{items: items}
+func NewMapBackendFrom(cleanupInterval time.Duration, items map[string]Item) *MapBackend {
+	b := &MapBackend{items: items}
 
 	if cleanupInterval > 0 {
 		runJanitor(b, cleanupInterval)
@@ -38,11 +38,11 @@ func NewMemoryBackendFrom(cleanupInterval time.Duration, items map[string]Item) 
 	return b
 }
 
-func NewMemoryBackend(cleanupInterval time.Duration) *MemoryBackend {
-	return NewMemoryBackendFrom(cleanupInterval, make(map[string]Item))
+func NewMapBackend(cleanupInterval time.Duration) *MapBackend {
+	return NewMapBackendFrom(cleanupInterval, make(map[string]Item))
 }
 
-func (b *MemoryBackend) Get(_ context.Context, key string) ([]byte, error) {
+func (b *MapBackend) Get(_ context.Context, key string) ([]byte, error) {
 	b.mu.RLock()
 	i, ok := b.items[key]
 	b.mu.RUnlock()
@@ -54,7 +54,7 @@ func (b *MemoryBackend) Get(_ context.Context, key string) ([]byte, error) {
 	return i.Value, nil
 }
 
-func (b *MemoryBackend) Set(_ context.Context, key string, value []byte, ttl time.Duration) error {
+func (b *MapBackend) Set(_ context.Context, key string, value []byte, ttl time.Duration) error {
 	var e int64
 	if ttl > 0 {
 		e = time.Now().Add(ttl).UnixNano()
@@ -67,7 +67,7 @@ func (b *MemoryBackend) Set(_ context.Context, key string, value []byte, ttl tim
 	return nil
 }
 
-func (b *MemoryBackend) Del(_ context.Context, key string) error {
+func (b *MapBackend) Del(_ context.Context, key string) error {
 	b.mu.Lock()
 	delete(b.items, key)
 	b.mu.Unlock()
@@ -75,7 +75,7 @@ func (b *MemoryBackend) Del(_ context.Context, key string) error {
 	return nil
 }
 
-func (b *MemoryBackend) DelAll(context.Context) error {
+func (b *MapBackend) DelAll(context.Context) error {
 	b.mu.Lock()
 	b.items = map[string]Item{}
 	b.mu.Unlock()
@@ -83,7 +83,7 @@ func (b *MemoryBackend) DelAll(context.Context) error {
 	return nil
 }
 
-func (b *MemoryBackend) DelExpired() {
+func (b *MapBackend) DelExpired() {
 	now := time.Now().UnixNano()
 
 	b.mu.Lock()
@@ -95,7 +95,7 @@ func (b *MemoryBackend) DelExpired() {
 	b.mu.Unlock()
 }
 
-func (b *MemoryBackend) Items() map[string]Item {
+func (b *MapBackend) Items() map[string]Item {
 	m := make(map[string]Item, len(b.items))
 	now := time.Now().UnixNano()
 
@@ -116,7 +116,7 @@ type janitor struct {
 	stop     chan bool
 }
 
-func (j *janitor) Run(b *MemoryBackend) {
+func (j *janitor) Run(b *MapBackend) {
 	ticker := time.NewTicker(j.Interval)
 	for {
 		select {
@@ -129,11 +129,11 @@ func (j *janitor) Run(b *MemoryBackend) {
 	}
 }
 
-func stopJanitor(b *MemoryBackend) {
+func stopJanitor(b *MapBackend) {
 	b.janitor.stop <- true
 }
 
-func runJanitor(b *MemoryBackend, ci time.Duration) {
+func runJanitor(b *MapBackend, ci time.Duration) {
 	j := &janitor{
 		Interval: ci,
 		stop:     make(chan bool),
