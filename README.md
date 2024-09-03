@@ -2,11 +2,19 @@
 
 ## Installation
 
+### Install Cache
+
 ```sh
 go get -u github.com/gowool/cache
 ```
 
-### Redis Backend
+### Install Fx Module
+
+```sh
+go get -u github.com/gowool/cache/fx
+```
+
+### Install Redis Backend
 
 ```sh
 go get -u github.com/gowool/rediscachebe
