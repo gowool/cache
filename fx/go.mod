@@ -5,7 +5,7 @@ go 1.23.0
 replace github.com/gowool/cache => ..
 
 require (
-	github.com/gowool/cache v0.0.0
+	github.com/gowool/cache v0.0.1
 	go.uber.org/fx v1.22.2
 )
 
