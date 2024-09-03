@@ -1,6 +1,6 @@
 module github.com/gowool/cache
 
-go 1.22.1
+go 1.23.0
 
 require (
 	github.com/coocood/freecache v1.2.4
