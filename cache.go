@@ -32,6 +32,10 @@ func (c *cache) Set(ctx context.Context, key string, value any, tags ...string) 
 		return err
 	}
 
+	if len(tags) == 0 {
+		return nil
+	}
+
 	if err := c.set(ctx, "tags:"+key, tags); err != nil {
 		return err
 	}
