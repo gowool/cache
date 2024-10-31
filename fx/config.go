@@ -4,7 +4,7 @@ import "time"
 
 type Config struct {
 	Size    int           `json:"size,omitempty" yaml:"size,omitempty"`
-	ItemTTL time.Duration `json:"item_ttl,omitempty" yaml:"item_ttl,omitempty"`
+	ItemTTL time.Duration `json:"itemTTL,omitempty" yaml:"itemTTL,omitempty"`
 }
 
 func (cfg *Config) InitDefaults() {
